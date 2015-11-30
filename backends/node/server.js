@@ -8,6 +8,7 @@ var errorhandler = require('errorhandler');
 var socketIO = require('socket.io');
 var path = require('path');
 var http = require('http');
+var fs = require('fs');
 
 var app = express();
 var appServer = http.createServer(app);
@@ -21,12 +22,11 @@ if (process.env.NODE_ENV === 'development') {
 
 var io = socketIO.listen(appServer);
 
-var str = "# This is a Markdown heading\n\n"
-        + "1. un\n"
-        + "2. deux\n"
-        + "3. trois\n\n"
-        + "Lorem *ipsum* dolor **sit** amet.\n\n"
-        + "    $ touch test.txt";
+//read file
+var str = "# CS 307: System Practicum\n\n"
+        + "1. B13136 Samriddhi Jain\n"
+        + "2. B13112 Ayush Yadav\n";
+        
 var socketIOServer = new ot.EditorSocketIOServer(str, [], 'demo', function (socket, cb) {
   cb(!!socket.mayEdit);
 });
@@ -43,10 +43,13 @@ io.sockets.on('connection', function (socket) {
   });
 });
 
-var port = process.env.PORT || 3000;
+var port = process.env.PORT || 8000;
 appServer.listen(port, function () {
   console.log("Listening on port " + port);
 });
+
+//console.log(getFiles('../ot-demo/backends/node/files'))
+
 
 process.on('uncaughtException', function (exc) {
   console.error(exc);

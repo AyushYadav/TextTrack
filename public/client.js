@@ -1,9 +1,10 @@
+//var fs = require('fs');
+
 (function () {
   var EditorClient = ot.EditorClient;
   var SocketIOAdapter = ot.SocketIOAdapter;
   var AjaxAdapter = ot.AjaxAdapter;
   var CodeMirrorAdapter = ot.CodeMirrorAdapter;
-
   var socket;
 
   var disabledRegex = /(^|\s+)disabled($|\s+)/;
@@ -64,7 +65,22 @@
 
   function bold ()   { wrap('**'); }
   function italic () { wrap('*'); }
-  function code ()   { wrap('`'); }
+  function code ()   { 
+      window.alert('i code function');
+      window.alert(cm.getValue());
+
+      files=cm.getValue();
+      var str = JSON.stringify(files);
+      window.alert(str);
+       var fs = require('fs');
+      var stream = fs.createWriteStream("my_file.txt");
+      stream.once('open', function(fd) {
+          window.alert('file opened for writing');
+          stream.write(str);
+          stream.end();
+          });
+        window.alert("File written");
+      }
 
   var editorWrapper = document.getElementById('editor-wrapper');
   var cm = window.cm = CodeMirror(editorWrapper, {
@@ -89,7 +105,12 @@
   disable(italicBtn);
   var codeBtn = document.getElementById('code-btn');
   disable(codeBtn);
-  codeBtn.onclick = function (e) { code(); stopEvent(e); };
+  codeBtn.onclick = function (e) { 
+    console.log('function onclick called');
+    code();
+    stopEvent(e);
+    
+  };
 
   var loginForm = document.getElementById('login-form');
   loginForm.onsubmit = function (e) {
@@ -125,6 +146,41 @@
     init(obj.str, obj.revision, obj.clients, new SocketIOAdapter(socket));
   });
 
+
+
+function getFiles (dir, files_){
+  files_ = files_ || [];
+  var files = fs.readdirSync(dir);
+  for (var i in files){
+      var name = dir + '/' + files[i];
+      if (fs.statSync(name).isDirectory()){
+          getFiles(name, files_);
+      } else {
+          files_.push(name);
+      }
+  }
+  return files_;
+}
+
+//var files=getFiles('files');
+/*var list = document.createElement('li');
+//list.appendChild(document.createTextNode(getFiles('../ot-demo/backends/node/public/files')));
+list.appendChild(document.createTextNode(JSON.parse(files)));*/
+var fileListWrapper = document.getElementById('filelist-wrapper');
+var list = document.createElement('li');
+list.appendChild(document.createTextNode("file1.txt"));
+fileListWrapper.appendChild(list);
+
+var list = document.createElement('li');
+list.appendChild(document.createTextNode("file2.txt"));
+fileListWrapper.appendChild(list);
+
+for (var index = 0; index < files.length; index++) {
+    var list = document.createElement('list');
+    list.appendChild(document.createTextNode(files[index]));
+    fileListWrapper.appendChild(list);
+}
+
   // uncomment to simulate more latency
   (function () {
     var emit = socket.emit;
@@ -137,7 +193,7 @@
       if (queue.length) {
         emit.apply(socket, queue.shift());
       }
-    }, 800);
+    }, 100);
   })();
 
   function init (str, revision, clients, serverAdapter) {
